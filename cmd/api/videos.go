@@ -9,7 +9,22 @@ import (
 )
 
 func (app *application) createVideoHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "create video")
+	/**
+	BODY='{"title":"Norway 4K • Scenic Relaxation Film with Peaceful Relaxing Music and Nature Video Ultra HD","url":"https://www.youtube.com/watch?v=KLuTLF3x9sA"}'
+	curl -i -d "$BODY" localhost:4000/v1/videos
+	*/
+	var input struct {
+		Url string `json:"url"`
+		Title string `json:"title"`
+		Description string `json:"description"`
+	}
+
+	err := app.readJSON(w, r, &input)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+	fmt.Fprintf(w, "%+v\n", input)
 }
 
 func (app *application) showVideoHandler(w http.ResponseWriter, r *http.Request) {
