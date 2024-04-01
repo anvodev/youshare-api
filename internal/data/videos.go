@@ -1,6 +1,7 @@
 package data
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"time"
@@ -26,6 +27,37 @@ func (v VideoModel) Insert(video *Video) error {
 		RETURNING id, created_at`
 	args := []any{video.Title, video.Url, video.Description}
 	return v.DB.QueryRow(query, args...).Scan(&video.ID, &video.CreatedAt)
+}
+
+func (v VideoModel) GetAll() ([]*Video, error) {
+	query := `
+		SELECT id, url, title, description, created_at, updated_at
+		FROM videos
+		ORDER BY id`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := v.DB.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	videos := []*Video{}
+	for rows.Next() {
+		var video Video
+		err := rows.Scan(&video.ID, &video.Url, &video.Title, &video.Description, &video.CreatedAt, &video.UpdatedAt)
+		if err != nil {
+			return nil, err
+		}
+		videos = append(videos, &video)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return videos, nil
 }
 
 func (v VideoModel) Get(id int64) (*Video, error) {

@@ -8,6 +8,19 @@ import (
 	"youshare-api.anvo.dev/internal/data"
 )
 
+func (app *application) listVideosHandler(w http.ResponseWriter, r *http.Request) {
+	videos, err := app.models.Videos.GetAll()
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelop{"videos": videos}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
 func (app *application) createVideoHandler(w http.ResponseWriter, r *http.Request) {
 	/**
 	BODY='{"title":"Norway 4K • Scenic Relaxation Film with Peaceful Relaxing Music and Nature Video Ultra HD","url":"https://www.youtube.com/watch?v=KLuTLF3x9sA"}'
