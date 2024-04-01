@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"errors"
 	"time"
+
+	"youshare-api.anvo.dev/internal/validator"
 )
 
 type Video struct {
@@ -14,6 +16,13 @@ type Video struct {
 	Description string    `json:"description"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+func ValidateVideo(v *validator.Validator, video *Video) {
+	v.Check(video.Title != "", "title", "must be provided")
+	v.Check(len(video.Title) <= 500, "title", "must not be more than 500 bytes long")
+	v.Check(video.Url != "", "url", "must be provided")
+	v.Check(video.Url == "" || validator.Matches(video.Url, validator.YoutubeRX), "url", "must be a valid youtube URL")
 }
 
 type VideoModel struct {

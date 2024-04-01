@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"youshare-api.anvo.dev/internal/data"
+	"youshare-api.anvo.dev/internal/validator"
 )
 
 func (app *application) listVideosHandler(w http.ResponseWriter, r *http.Request) {
@@ -42,6 +43,12 @@ func (app *application) createVideoHandler(w http.ResponseWriter, r *http.Reques
 		Url:         input.Url,
 		Title:       input.Title,
 		Description: input.Description,
+	}
+
+	v := validator.New()
+	if data.ValidateVideo(v, video); !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
 	}
 
 	err = app.models.Videos.Insert(video)
