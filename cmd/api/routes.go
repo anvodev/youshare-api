@@ -5,6 +5,7 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 )
+
 func (app *application) routes() *httprouter.Router {
 	router := httprouter.New()
 
@@ -18,6 +19,8 @@ func (app *application) routes() *httprouter.Router {
 	router.HandlerFunc(http.MethodGet, "/v1/videos/:id", app.showVideoHandler)
 	router.HandlerFunc(http.MethodPut, "/v1/videos/:id", app.updateVideoHandler)
 	router.HandlerFunc(http.MethodDelete, "/v1/videos/:id", app.deleteVideoHandler)
+
+	router.HandlerFunc(http.MethodPost, "/v1/users", app.registerUserHandler)
 
 	return router
 }
