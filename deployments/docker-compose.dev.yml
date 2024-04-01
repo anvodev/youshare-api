@@ -10,6 +10,8 @@ services:
       POSTGRES_PASSWORD: pa55word
       POSTGRES_DB: youshare
       POSTGRES_USER: youshare
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     ports: # use different port to avoid conflicts with host's postgres
       - 6543:5432
 
