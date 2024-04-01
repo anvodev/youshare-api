@@ -2,16 +2,17 @@ package data
 
 import (
 	"database/sql"
+	"errors"
 	"time"
 )
 
 type Video struct {
-	ID    int64 `json:"id"`
-	Url   string `json:"url"`
-	Title string `json:"title"`
-	Description string `json:"description"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID          int64     `json:"id"`
+	Url         string    `json:"url"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 type VideoModel struct {
@@ -28,7 +29,23 @@ func (v VideoModel) Insert(video *Video) error {
 }
 
 func (v VideoModel) Get(id int64) (*Video, error) {
-	return nil, nil
+	if id < 1 {
+		return nil, ErrRecordNotFound
+	}
+	query := `
+		SELECT id, url, title, description, created_at, updated_at
+		FROM videos
+		WHERE id = $1`
+	var video Video
+
+	err := v.DB.QueryRow(query, id).Scan(&video.ID, &video.Url, &video.Title, &video.Description, &video.CreatedAt, &video.UpdatedAt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrRecordNotFound
+		}
+		return nil, err
+	}
+	return &video, nil
 }
 
 func (v VideoModel) update(video *Video) error {

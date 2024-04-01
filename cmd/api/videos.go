@@ -1,9 +1,9 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
-	"time"
 
 	"youshare-api.anvo.dev/internal/data"
 )
@@ -14,8 +14,8 @@ func (app *application) createVideoHandler(w http.ResponseWriter, r *http.Reques
 	curl -i -d "$BODY" localhost:4000/v1/videos
 	*/
 	var input struct {
-		Url string `json:"url"`
-		Title string `json:"title"`
+		Url         string `json:"url"`
+		Title       string `json:"title"`
 		Description string `json:"description"`
 	}
 
@@ -26,8 +26,8 @@ func (app *application) createVideoHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	video := &data.Video{
-		Url: input.Url,
-		Title: input.Title,
+		Url:         input.Url,
+		Title:       input.Title,
 		Description: input.Description,
 	}
 
@@ -53,14 +53,15 @@ func (app *application) showVideoHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	video := data.Video{
-		ID: id,
-		Url: "https://www.youtube.com/watch?v=KLuTLF3x9sA",
-		Title: "Norway 4K • Scenic Relaxation Film with Peaceful Relaxing Music and Nature Video Ultra HD",
-		Description: `12 hours of healing music and relaxation with beautiful views of Norway in 4K Ultra HD
-		🎹 Richard Nomad`,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+	video, err := app.models.Videos.Get(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
 	}
 
 	err = app.writeJSON(w, http.StatusOK, envelop{"video": video}, nil)
