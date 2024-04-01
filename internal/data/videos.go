@@ -48,8 +48,16 @@ func (v VideoModel) Get(id int64) (*Video, error) {
 	return &video, nil
 }
 
-func (v VideoModel) update(video *Video) error {
-	return nil
+func (v VideoModel) Update(video *Video) error {
+	query := `
+		UPDATE videos
+		SET title = $1, url = $2, description = $3, updated_at = $4
+		WHERE id = $5`
+
+	args := []any{video.Title, video.Url, video.Description, time.Now(), video.ID}
+	_, err := v.DB.Exec(query, args...)
+
+	return err
 }
 
 func (v VideoModel) Delete(id int64) error {

@@ -77,7 +77,44 @@ func (app *application) updateVideoHandler(w http.ResponseWriter, r *http.Reques
 		app.notFoundResponse(w, r)
 		return
 	}
-	fmt.Fprintf(w, "update video %d \n", id)
+
+	video, err := app.models.Videos.Get(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	var input struct {
+		Url         string `json:"url"`
+		Title       string `json:"title"`
+		Description string `json:"description"`
+	}
+
+	err = app.readJSON(w, r, &input)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	video.Url = input.Url
+	video.Title = input.Title
+	video.Description = input.Description
+
+	err = app.models.Videos.Update(video)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelop{"video": video}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 }
 
 func (app *application) deleteVideoHandler(w http.ResponseWriter, r *http.Request) {
