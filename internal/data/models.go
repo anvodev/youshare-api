@@ -10,11 +10,11 @@ var (
 )
 
 type Models struct {
-	Video VideoModel
+	Videos VideoModel
 }
 
 func NewModels(db *sql.DB) Models {
 	return Models{
-		Video: VideoModel{DB: db},
+		Videos: VideoModel{DB: db},
 	}
 }

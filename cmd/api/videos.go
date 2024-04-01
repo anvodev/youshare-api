@@ -24,7 +24,26 @@ func (app *application) createVideoHandler(w http.ResponseWriter, r *http.Reques
 		app.badRequestResponse(w, r, err)
 		return
 	}
-	fmt.Fprintf(w, "%+v\n", input)
+
+	video := &data.Video{
+		Url: input.Url,
+		Title: input.Title,
+		Description: input.Description,
+	}
+
+	err = app.models.Videos.Insert(video)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	headers := make(http.Header)
+	headers.Set("Location", fmt.Sprintf("/v1/videos/%d", video.ID))
+
+	err = app.writeJSON(w, http.StatusCreated, envelop{"video": video}, headers)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 }
 
 func (app *application) showVideoHandler(w http.ResponseWriter, r *http.Request) {

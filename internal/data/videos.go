@@ -19,7 +19,12 @@ type VideoModel struct {
 }
 
 func (v VideoModel) Insert(video *Video) error {
-	return nil
+	query := `
+		INSERT INTO videos (url, title, description)
+		VALUES ($1, $2, $3)
+		RETURNING id, created_at`
+	args := []any{video.Title, video.Url, video.Description}
+	return v.DB.QueryRow(query, args...).Scan(&video.ID, &video.CreatedAt)
 }
 
 func (v VideoModel) Get(id int64) (*Video, error) {
