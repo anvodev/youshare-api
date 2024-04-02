@@ -34,7 +34,7 @@ func (v VideoModel) Insert(video *Video) error {
 		INSERT INTO videos (url, title, description)
 		VALUES ($1, $2, $3)
 		RETURNING id, created_at`
-	args := []any{video.Title, video.Url, video.Description}
+	args := []any{video.Url, video.Title, video.Description}
 	return v.DB.QueryRow(query, args...).Scan(&video.ID, &video.CreatedAt)
 }
 
