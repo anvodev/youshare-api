@@ -1,0 +1,2 @@
+ALTER TABLE videos DROP CONSTRAINT IF EXISTS fk_videos_users;
+ALTER TABLE videos DROP COLUMN IF EXISTS author_id;

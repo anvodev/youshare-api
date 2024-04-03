@@ -52,3 +52,7 @@ func (app *application) invalidAuthenticationTokenResponse(w http.ResponseWriter
 	w.Header().Set("WWW-Authenticate", "Bearer")
 	app.errorResponse(w, r, http.StatusUnauthorized, "invalid or missing authentication token")
 }
+
+func (app *application) authenticationRequiredResponse(w http.ResponseWriter, r *http.Request) {
+	app.errorResponse(w, r, http.StatusUnauthorized, "authentication required")
+}

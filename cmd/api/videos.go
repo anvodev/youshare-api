@@ -39,10 +39,21 @@ func (app *application) createVideoHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	user := app.contextGetUser(r)
+	if user.IsAnonymous() {
+		app.authenticationRequiredResponse(w, r)
+		return
+	}
+
 	video := &data.Video{
 		Url:         input.Url,
 		Title:       input.Title,
 		Description: input.Description,
+		Author: data.User{
+			ID:    user.ID,
+			Name:  user.Name,
+			Email: user.Email,
+		},
 	}
 
 	v := validator.New()

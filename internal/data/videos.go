@@ -16,6 +16,7 @@ type Video struct {
 	Description string    `json:"description"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
+	Author      User      `json:"author"`
 }
 
 func ValidateVideo(v *validator.Validator, video *Video) {
@@ -31,18 +32,20 @@ type VideoModel struct {
 
 func (v VideoModel) Insert(video *Video) error {
 	query := `
-		INSERT INTO videos (url, title, description)
-		VALUES ($1, $2, $3)
+		INSERT INTO videos (url, title, description, author_id)
+		VALUES ($1, $2, $3, $4)
 		RETURNING id, created_at`
-	args := []any{video.Url, video.Title, video.Description}
+	args := []any{video.Url, video.Title, video.Description, video.Author.ID}
 	return v.DB.QueryRow(query, args...).Scan(&video.ID, &video.CreatedAt)
 }
 
 func (v VideoModel) GetAll() ([]*Video, error) {
 	query := `
-		SELECT id, url, title, description, created_at, updated_at
-		FROM videos
-		ORDER BY id`
+		SELECT v.id, v.url, v.title, v.description, v.created_at, v.updated_at, u.id, u.name, u.email
+		FROM videos v
+		JOIN users u
+		ON v.author_id = u.id
+		ORDER BY v.id`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -56,7 +59,7 @@ func (v VideoModel) GetAll() ([]*Video, error) {
 	videos := []*Video{}
 	for rows.Next() {
 		var video Video
-		err := rows.Scan(&video.ID, &video.Url, &video.Title, &video.Description, &video.CreatedAt, &video.UpdatedAt)
+		err := rows.Scan(&video.ID, &video.Url, &video.Title, &video.Description, &video.CreatedAt, &video.UpdatedAt, &video.Author.ID, &video.Author.Name, &video.Author.Email)
 		if err != nil {
 			return nil, err
 		}
