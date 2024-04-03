@@ -30,3 +30,6 @@ CREATE TABLE IF NOT EXISTS tokens (
 -- Seed data
 INSERT INTO users (name, email, password_hash) VALUES
 ('Alice', 'alice_test@example.com', 'pa55word');
+
+INSERT INTO videos (url, title, description, author_id) VALUES
+('https://www.youtube.com/watch?v=KLuTLF3x9sA', 'Norway 4K', 'Video description', 1);
