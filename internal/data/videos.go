@@ -45,7 +45,7 @@ func (v VideoModel) GetAll() ([]*Video, error) {
 		FROM videos v
 		JOIN users u
 		ON v.author_id = u.id
-		ORDER BY v.id`
+		ORDER BY v.id DESC`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
