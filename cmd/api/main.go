@@ -18,8 +18,8 @@ const version = "1.0.0"
 
 type config struct {
 	port int
-	env string
-	db struct {
+	env  string
+	db   struct {
 		dsn string
 	}
 }
@@ -29,6 +29,7 @@ type application struct {
 	logger *log.Logger
 	models data.Models
 }
+
 func main() {
 	var cfg config
 	flag.IntVar(&cfg.port, "port", 4000, "API server port")
@@ -36,7 +37,7 @@ func main() {
 	flag.StringVar(&cfg.db.dsn, "db-dsn", os.Getenv("YOUSHARE_DSN"), "PostgreSQL DSN")
 	flag.Parse()
 
-	logger := log.New(os.Stdout, "", log.Ldate | log.Ltime)
+	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
 
 	db, err := openDB(cfg)
 	if err != nil {
@@ -52,12 +53,13 @@ func main() {
 		models: data.NewModels(db),
 	}
 
+	go app.broadcastWs()
 
 	srv := &http.Server{
-		Addr: fmt.Sprintf(":%d", cfg.port),
-		Handler: app.routes(),
-		IdleTimeout: time.Minute,
-		ReadTimeout: 10 * time.Second,
+		Addr:         fmt.Sprintf(":%d", cfg.port),
+		Handler:      app.routes(),
+		IdleTimeout:  time.Minute,
+		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}
 
