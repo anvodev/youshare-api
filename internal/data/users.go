@@ -77,6 +77,7 @@ func (m UserModel) Insert(user *User) error {
 			return err
 		}
 	}
+
 	return nil
 }
 

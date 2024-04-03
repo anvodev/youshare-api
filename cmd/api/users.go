@@ -45,7 +45,13 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusCreated, envelop{"user": user}, nil)
+	token, err := app.models.Tokens.New(user.ID, 24*time.Hour)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusCreated, envelop{"authentication_token": token, "user": user}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
