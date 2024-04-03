@@ -10,3 +10,10 @@ func Equal[T comparable](t *testing.T, expected, actual T) {
 		t.Errorf("expected %v, actual %v", expected, actual)
 	}
 }
+
+func NilError(t *testing.T, actual error) {
+	t.Helper()
+	if actual != nil {
+		t.Errorf("expected nil, actual %v", actual)
+	}
+}

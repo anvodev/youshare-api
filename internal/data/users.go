@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"errors"
+	"log"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -100,22 +101,23 @@ func (m UserModel) GetByEmail(email string) (*User, error) {
 
 func (m UserModel) Update(user *User) error {
 	query := `UPDATE users
-	SET name = $1, email = $2, password_hash = $3, updated_at = $4
-	WHERE id = $5`
-	args := []any{user.Name, user.Email, user.Password.hash, user.UpdatedAt, user.ID}
+	SET name = $1, updated_at = $2
+	WHERE email = $3`
+	args := []any{user.Name, user.UpdatedAt, user.Email}
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-	_, err := m.DB.ExecContext(ctx, query, args...)
+	rs, err := m.DB.ExecContext(ctx, query, args...)
 	if err != nil {
-		switch {
-		case err.Error() == `pq: duplicate key value violates unique constraint "users_email_key"`:
-			return ErrDuplicateEmail
-		case errors.Is(err, sql.ErrNoRows):
-			return ErrEditConflict
-		default:
-			return err
-		}
+		log.Fatal(err)
 	}
+	rowsAffected, err := rs.RowsAffected()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if rowsAffected == 0 {
+		return ErrEditConflict
+	}
+
 	return nil
 }
 
