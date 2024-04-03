@@ -60,7 +60,7 @@ func (app *application) createVideoHandler(w http.ResponseWriter, r *http.Reques
 	headers := make(http.Header)
 	headers.Set("Location", fmt.Sprintf("/v1/videos/%d", video.ID))
 
-	videoCreated <- fmt.Sprintf("%d %s %s", video.ID, video.Url, video.Title)
+	videoCreated <- *video
 
 	err = app.writeJSON(w, http.StatusCreated, envelop{"video": video}, headers)
 	if err != nil {

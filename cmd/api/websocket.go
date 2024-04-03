@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/websocket"
+	"youshare-api.anvo.dev/internal/data"
 )
 
 var (
@@ -19,7 +20,7 @@ var (
 	clients    = make(map[*websocket.Conn]bool)
 )
 
-var videoCreated = make(chan string)
+var videoCreated = make(chan data.Video)
 
 func (app *application) websocketHandler(w http.ResponseWriter, r *http.Request) {
 	ws, err := upgrader.Upgrade(w, r, nil)
@@ -30,13 +31,6 @@ func (app *application) websocketHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	register <- ws
-	app.logger.Print("Client connected")
-	defer func() {
-		unregister <- ws
-		ws.Close()
-		app.logger.Print("Client disconnected")
-	}()
-
 	for {
 		_, _, err := ws.ReadMessage()
 		if err != nil {
@@ -44,6 +38,7 @@ func (app *application) websocketHandler(w http.ResponseWriter, r *http.Request)
 			break
 		}
 	}
+	unregister <- ws
 }
 
 func (app *application) broadcastWs() {
@@ -51,14 +46,16 @@ func (app *application) broadcastWs() {
 		select {
 		case client := <-register:
 			clients[client] = true
+			app.logger.Print("Client connected")
 		case client := <-unregister:
 			if _, ok := clients[client]; ok {
 				delete(clients, client)
 				client.Close()
+				app.logger.Print("Client disconnected")
 			}
 		case msg := <-videoCreated:
 			for client := range clients {
-				err := client.WriteMessage(websocket.TextMessage, []byte(msg))
+				err := client.WriteJSON(envelop{"video": msg})
 				if err != nil {
 					unregister <- client
 					client.Close()
