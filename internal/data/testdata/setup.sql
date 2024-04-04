@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS tokens (
     expiry timestamp(0) with time zone NOT NULL
 );
 
--- Seed data
+-- Seed data test
 INSERT INTO users (name, email, password_hash) VALUES
 ('Alice', 'alice_test@example.com', 'pa55word');
 
